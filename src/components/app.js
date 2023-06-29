@@ -14,27 +14,29 @@ class NumberJudgment {
   firstValue = null;
   secondValue = null;
   thirdValue = null;
+  cpuNumArr = null;
+  strike = 0;
+  ball = 0;
 
   cpuFirstNum() {
-    return (this.firstValue = Math.floor(Math.random() * 10));
+    return (this.firstValue = Math.floor(Math.random() * 9) + 1);
   }
 
   cpuSecondNum() {
-    let secondNum = Math.floor(Math.random() * 10);
-    while (this.firstValue !== secondNum) {
-      secondNum = Math.floor(Math.random() * 10);
+    let secondNum = Math.floor(Math.random() * 9) + 1;
+    while (this.firstValue === secondNum) {
+      secondNum = Math.floor(Math.random() * 9) + 1;
     }
     return (this.secondValue = secondNum);
   }
 
   cpuThirdNum() {
-    let thirdNum = Math.floor(Math.random() * 10);
-    while (
-      this.firstValue !== this.secondValue &&
-      this.firstValue !== thirdNum &&
-      this.secondValue !== thirdNum
-    ) {
-      thirdNum = Math.floor(Math.random() * 10);
+    let thirdNum = Math.floor(Math.random() * 9) + 1;
+    while (this.secondValue === thirdNum || this.firstValue === thirdNum) {
+      console.log(
+        `this first : ${this.firstValue}, this second:${this.secondValue}, this third:${thirdNum}`
+      );
+      thirdNum = Math.floor(Math.random() * 9) + 1;
     }
     return (this.thirdValue = thirdNum);
   }
@@ -49,36 +51,40 @@ class NumberJudgment {
     return cpuArr;
   }
 
+  userInfo(userNum, userNumIdx) {
+    this.cpuNumArr.forEach((cpuNum, cpuNumidx) => {
+      if (userNum === cpuNum && userNumIdx === cpuNumidx) {
+        this.strike++;
+      } else if (userNum === cpuNum && userNumIdx !== cpuNumidx) {
+        this.ball++;
+      }
+    });
+  }
+
   judgment() {
-    let strike = 0;
-    let ball = 0;
+    this.strike = 0;
+    this.ball = 0;
     let nothing = false;
-    const arr = this.cpu();
+    this.cpuNumArr = this.cpu();
     const numArr = Array.from(this.num).map(Number);
     numArr.forEach((userNum, userNumIdx) => {
-      arr.forEach((cpuNum, cpuNumidx) => {
-        if (userNum === cpuNum && userNumIdx === cpuNumidx) {
-          strike++;
-        } else if (userNum === cpuNum && userNumIdx !== cpuNumidx) {
-          ball++;
-        }
-      });
+      this.userInfo(userNum, userNumIdx);
     });
 
-    if (strike === 0 && ball === 0) {
+    if (this.strike === 0 && this.ball === 0) {
       nothing = true;
     }
 
     console.log(
-      `cpu숫자는${arr.join("")}, user숫자는${numArr.join(
+      `cpu숫자는${this.cpuNumArr.join("")}, user숫자는${numArr.join(
         ""
-      )} strike는${strike} ball은 ${ball}`
+      )} strike는${this.strike} ball은 ${this.ball}`
     );
     const result = {
-      cpuNum: arr.join(""),
+      cpuNum: this.cpuNumArr.join(""),
       userNum: numArr.join(""),
-      strike,
-      ball,
+      strike: this.strike,
+      ball: this.ball,
       nothing,
     };
     return result;
@@ -87,7 +93,7 @@ class NumberJudgment {
 
 const handleSubmit = (e) => {
   e.preventDefault();
-  const inputValue = input.value;
+  const inputValue = input.value.trim();
 
   if (exceptionHandling(inputValue)) {
     return;
@@ -107,6 +113,10 @@ const resultView = (result) => {
   result.nothing
     ? (nothingElement.innerText = "낫싱입니다")
     : (nothingElement.innerText = "");
+  if (result.strike === 3) {
+    nothingElement.innerText = "3개의 숫자를 모두 맞히셨습니다 게임종료";
+    return;
+  }
 };
 
 const exceptionHandling = (inputValue) => {
@@ -125,4 +135,5 @@ const exceptionHandling = (inputValue) => {
     return true;
   }
 };
+
 inputForm.addEventListener("submit", handleSubmit);
